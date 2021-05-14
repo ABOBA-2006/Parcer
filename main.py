@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
+get_answer = input('Choose what do you want to know? ')
+
 
 URL = 'https://www.hltv.org/'
 DICTIONARY = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; '
@@ -13,9 +15,19 @@ def get_html(url, params=None):
     return response
 
 
+def get_content(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    if get_answer == 'Rating':
+        item_1 = soup.find_all('div', class_='col-box rank')
+        print(item_1)
+
+
 def parse():
     html = get_html(URL)
-    print(html)
+    if html.status_code == 200:
+        get_content(html.text)
+    else:
+        print('Error')
 
 
 parse()
