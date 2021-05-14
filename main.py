@@ -18,8 +18,18 @@ def get_html(url, params=None):
 def get_content(html):
     soup = BeautifulSoup(html, 'html.parser')
     if get_answer == 'Rating':
-        item_1 = soup.find_all('div', class_='col-box rank')
-        print(item_1)
+        items = soup.find_all('div', class_='col-box rank')
+
+        teams = []
+        for item in items:
+            teams.append({
+                'name': item.find('a', class_='text-ellipsis').get_text(strip=True),
+                'position': item.find('a', class_='rankNum').get_text(strip=True).replace('.', ''),
+                'logo': item.find('img', class_='teamImg').get('src')
+            })
+        print(teams)
+    else:
+        print("Sorry, but this program doesn't know how to complete your request :(")
 
 
 def parse():
