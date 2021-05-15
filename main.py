@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import os
+from openpyxl import Workbook
 
 get_answer = input('Choose what do you want to know? ')
 
@@ -48,6 +50,7 @@ def parse():
         teams = get_content(html.text)
         if teams != 1:
             save_file(teams, FILE)
+            os.startfile(FILE)
         else:
             print("Sorry, but this program doesn't know how to complete your request :(")
     else:
