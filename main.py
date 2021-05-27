@@ -72,22 +72,48 @@ def get_content_events(html, kind):
     return events
 
 
+def get_content_news(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    items = soup.find_all('a', {"class": "newsline article"})
+    news = []
+    for i in range(len(items)):
+        news.append({
+            'text': items[i].text,
+            'src': items[i].get('href'),
+            'data': items[i].find('div', {"class": "newsrecent"}),
+        })
+    return news
+
+
 # def get_content_matches(html, date):
 #     soup = BeautifulSoup(html, 'html.parser')
 #     items = soup.find_all('div', {"class": "upcomingMatchesSection"})
-#     items2 = items.find_all('div', {"class": "matchDayHeadline"})
+#     items2 = soup.find_all('div', {"class": "matchDayHeadline"})
 #     matches = []
-#     for i in range(len(items)):
-#         if date == items2[i]:
-#             items3 = items[i].find('div', {"class": "matchTeam team1"})
-#             items4 = items[i].find('div', {"class": "matchTeam team2"})
+#     date_2 = 0
+#
+#     for i in range(len(items2)):
+#         if items2[i].count(date) == 1:
+#             date_2 = i
+#             break
+#
+#     items3 = items2[date_2].find_all('div', {"class": "upcomingMatch removeBackground"})
+#     items4 = items2[date_2].find_all('div', {"class": "upcomingMatch removeBackground oddRowBgColor"})
+#     for j in range(max(len(items3), len(items4))):
+#         if j % 2 == 0:
 #             matches.append({
-#                 'first_team': items3[i].find('div', class_='matchTeamName text-ellipsis').get_text(strip=True),
-#                 'second_team': items4[i].find('div', class_='matchTeamName text-ellipsis').get_text(strip=True),
-#                 'logo_1': items3[i].find('img').get('src'),
-#                 'logo_2': items4[i].find('img').get('src'),
+#                 'time': items3[j // 2]
 #             })
-#     return matches
+#     return 0
+#
+#     # items3 = items[i].find('div', {"class": "matchTeam team1"})
+#     # items4 = items[i].find('div', {"class": "matchTeam team2"})
+#     # matches.append({
+#     #     'first_team': items3[i].find('div', class_='matchTeamName text-ellipsis').get_text(strip=True),
+#     #     'second_team': items4[i].find('div', class_='matchTeamName text-ellipsis').get_text(strip=True),
+#     #     'logo_1': items3[i].find('img').get('src'),
+#     #     'logo_2': items4[i].find('img').get('src'),
+#     # })
 
 
 def save_file_rating(items, path):
@@ -104,6 +130,14 @@ def save_file_events(items, path):
         writer.writerow(['Name', 'Date', 'Logo'])
         for item in items:
             writer.writerow([item['name'], item['data'], 'img'])
+
+
+def save_file_news(items, path):
+    with open(path, 'w', newline='') as file:
+        writer = csv.writer(file, delimiter=';')
+        writer.writerow(['Topic', 'SRC', 'Data'])
+        for item in items:
+            writer.writerow([item['text'], item['src'], item['data']])
 
 
 def parse():
@@ -123,11 +157,28 @@ def parse():
     elif get_answer == 'Events':
         get_answer_2 = input('Enter what type of events do you want to see: ')
         html = get_html(URL_EVENTS)
-        with open('test.html', 'w') as file:
-            file.write(html.text)
         if html.status_code == 200:
             events = get_content_events(html.text, get_answer_2)
             save_file_events(events, FILE)
+            os.startfile(FILE)
+        else:
+            print('Error')
+    # elif get_answer == 'Matches':
+    #     date = input('Enter date of matches , that you want to see: ')
+    #     html = get_html(URL_MATCHES)
+    #     if html.status_code == 200:
+    #         matches = get_content_matches(html.text, date)
+    #         print(matches)
+    #     else:
+    #         print('Error')
+    elif get_answer == 'News':
+        year = input('Enter year of news: ')
+        month = input('Enter month of news: ')
+        url_news = 'https://www.hltv.org/news/archive/' + year + '/' + month
+        html = get_html(url_news)
+        if html.status_code == 200:
+            news = get_content_news(html.text)
+            save_file_news(news, FILE)
             os.startfile(FILE)
         else:
             print('Error')
