@@ -2,11 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import os
+import datetime
+
+now = datetime.datetime.now()
 
 get_answer = input('Choose what do you want to know? ')
 
 
-URL_RATING = 'https://www.hltv.org/ranking/teams/2021/may/10'
+URL_MAIN = 'https://www.hltv.org'
 URL_EVENTS = 'https://www.hltv.org/events'
 URL_MATCHES = 'https://www.hltv.org/matches'
 DICTIONARY = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; '
@@ -18,6 +21,21 @@ FILE = 'teams_rating-events.csv'
 def get_html(url, params=None):
     response = requests.get(url, headers=DICTIONARY, params=params)
     return response
+
+
+def get_data_rating(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    item = soup.find('a', {"class": "block button text-center"}).get_text(strip=True)
+    start = 0
+    day = ''
+    for i in range(len(item)):
+        if item[i].isdigit():
+            start = i
+            day += item[i]
+    month = item[start::].split(' ')[2]
+    year = now.year
+    url = 'https://www.hltv.org/ranking/teams/' + str(year) + '/' + month.lower() + '/' + day
+    return url
 
 
 def get_content_rating(html):
@@ -90,11 +108,16 @@ def save_file_events(items, path):
 
 def parse():
     if get_answer == 'Rating':
-        html = get_html(URL_RATING)
-        if html.status_code == 200:
-            teams = get_content_rating(html.text)
-            save_file_rating(teams, FILE)
-            os.startfile(FILE)
+        html_0 = get_html(URL_MAIN)
+        if html_0.status_code == 200:
+            url_rating = get_data_rating(html_0.text)
+            html = get_html(url_rating)
+            if html.status_code == 200:
+                teams = get_content_rating(html.text)
+                save_file_rating(teams, FILE)
+                os.startfile(FILE)
+            else:
+                print('Error')
         else:
             print('Error')
     elif get_answer == 'Events':
