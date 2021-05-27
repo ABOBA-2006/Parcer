@@ -78,9 +78,9 @@ def get_content_news(html):
     news = []
     for i in range(len(items)):
         news.append({
-            'text': items[i].text,
-            'src': items[i].get('href'),
-            'data': items[i].find('div', {"class": "newsrecent"}),
+            'text': items[i].find('div', {"class": "newstext"}).get_text(strip=True),
+            'src': 'https://www.hltv.org' + items[i].get('href'),
+            'data': items[i].find('div', {"class": "newsrecent"}).get_text(strip=True),
         })
     return news
 
@@ -117,7 +117,7 @@ def get_content_news(html):
 
 
 def save_file_rating(items, path):
-    with open(path, 'w', newline='') as file:
+    with open(path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter=';')
         writer.writerow(['Position', 'Logo', 'Team', 'Points'])
         for item in items:
@@ -125,7 +125,7 @@ def save_file_rating(items, path):
 
 
 def save_file_events(items, path):
-    with open(path, 'w', newline='') as file:
+    with open(path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter=';')
         writer.writerow(['Name', 'Date', 'Logo'])
         for item in items:
@@ -133,7 +133,7 @@ def save_file_events(items, path):
 
 
 def save_file_news(items, path):
-    with open(path, 'w', newline='') as file:
+    with open(path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter=';')
         writer.writerow(['Topic', 'SRC', 'Data'])
         for item in items:
