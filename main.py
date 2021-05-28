@@ -11,11 +11,10 @@ get_answer = input('Choose what do you want to know? ')
 
 URL_MAIN = 'https://www.hltv.org'
 URL_EVENTS = 'https://www.hltv.org/events'
-URL_MATCHES = 'https://www.hltv.org/matches'
 DICTIONARY = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; '
                             'Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 '
                             'Safari/537.36 OPR/73.0.3856.438', 'accept': '*/*'}
-FILE = 'teams_rating-events.csv'
+FILE = 'parser.csv'
 
 
 def get_html(url, params=None):
@@ -85,35 +84,23 @@ def get_content_news(html):
     return news
 
 
-# def get_content_matches(html, date):
-#     soup = BeautifulSoup(html, 'html.parser')
-#     items = soup.find_all('div', {"class": "upcomingMatchesSection"})
-#     items2 = soup.find_all('div', {"class": "matchDayHeadline"})
-#     matches = []
-#     date_2 = 0
-#
-#     for i in range(len(items2)):
-#         if items2[i].count(date) == 1:
-#             date_2 = i
-#             break
-#
-#     items3 = items2[date_2].find_all('div', {"class": "upcomingMatch removeBackground"})
-#     items4 = items2[date_2].find_all('div', {"class": "upcomingMatch removeBackground oddRowBgColor"})
-#     for j in range(max(len(items3), len(items4))):
-#         if j % 2 == 0:
-#             matches.append({
-#                 'time': items3[j // 2]
-#             })
-#     return 0
-#
-#     # items3 = items[i].find('div', {"class": "matchTeam team1"})
-#     # items4 = items[i].find('div', {"class": "matchTeam team2"})
-#     # matches.append({
-#     #     'first_team': items3[i].find('div', class_='matchTeamName text-ellipsis').get_text(strip=True),
-#     #     'second_team': items4[i].find('div', class_='matchTeamName text-ellipsis').get_text(strip=True),
-#     #     'logo_1': items3[i].find('img').get('src'),
-#     #     'logo_2': items4[i].find('img').get('src'),
-#     # })
+def get_content_matches(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    item = soup.find('div', {"class": "rightCol"})
+    items2 = item.find_all('a', {"class": "hotmatch-box a-reset"})
+    matches = []
+
+    for i in range(len(items2)):
+        matches.append({
+            'name1': items2[i].find_all('span', {"class": "team"})[0].get_text(strip=True),
+            'flag1': items2[i].find_all('img', {"class": "flag"})[0].get('src'),
+            'name2': items2[i].find_all('span', {"class": "team"})[1].get_text(strip=True),
+            'flag2': items2[i].find_all('img', {"class": "flag"})[1].get('src'),
+            'count_or_time': items2[i].find_all('div', {"class": "livescore twoRowExtraRow"}).get_text(strip=True) if
+            items2[i].text.count('livescore twoRowExtraRow') >= 2 else 0
+        })
+
+    return matches
 
 
 def save_file_rating(items, path):
@@ -140,6 +127,14 @@ def save_file_news(items, path):
             writer.writerow([item['text'], item['src'], item['data']])
 
 
+def save_file_matches(items, path):
+    with open(path, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file, delimiter=';')
+        writer.writerow(['Name1', 'Flag1', 'Name2', 'Flag2', 'Count-Time'])
+        for item in items:
+            writer.writerow([item['name1'], item['flag1'], item['name2'], item['flag2'], item['count_or_time']])
+
+
 def parse():
     if get_answer == 'Rating':
         html_0 = get_html(URL_MAIN)
@@ -163,14 +158,14 @@ def parse():
             os.startfile(FILE)
         else:
             print('Error')
-    # elif get_answer == 'Matches':
-    #     date = input('Enter date of matches , that you want to see: ')
-    #     html = get_html(URL_MATCHES)
-    #     if html.status_code == 200:
-    #         matches = get_content_matches(html.text, date)
-    #         print(matches)
-    #     else:
-    #         print('Error')
+    elif get_answer == 'Matches':
+        html = get_html(URL_MAIN)
+        if html.status_code == 200:
+            matches = get_content_matches(html.text)
+            save_file_matches(matches, FILE)
+            os.startfile(FILE)
+        else:
+            print('Error')
     elif get_answer == 'News':
         year = input('Enter year of news: ')
         month = input('Enter month of news: ')
