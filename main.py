@@ -47,7 +47,7 @@ def get_content_rating(html):
             'name': item.find('span', class_='name').get_text(strip=True),
             'position': item.find('span', class_='position').get_text(strip=True).replace('#', ''),
             'points': item.find('span', class_='points').get_text(strip=True),
-            'logo': item.find('img').get('src'),
+            'logo': 'https://www.hltv.org' +  item.find('img').get('src'),
         })
     return teams
 
@@ -66,7 +66,7 @@ def get_content_events(html, kind):
         events.append({
             'name': item.find('div', class_='text-ellipsis').get_text(strip=True),
             'data': item.find('span', class_='col-desc').get_text(strip=True),
-            'logo': item.find('img', class_='logo').get('src'),
+            'logo': 'https://www.hltv.org' + item.find('img', class_='logo').get('src'),
         })
     return events
 
@@ -91,14 +91,20 @@ def get_content_matches(html):
     matches = []
 
     for i in range(len(items2)):
+        time = 0
+        if not items2[i].find('div', {"class": "middleExtra"}) is None:
+            time = int(items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[:2:]) + 1
+        if time == 24:
+            time = 0
+        print(items2[i].find('div', {"class": "twoRowExtra"}).get_text(strip=True))
         matches.append({
             'name1': items2[i].find_all('span', {"class": "team"})[0].get_text(strip=True),
-            'flag1': items2[i].find_all('img', {"class": "flag"})[0].get('src'),
+            'flag1': 'https://www.hltv.org' + items2[i].find_all('img', {"class": "flag"})[0].get('src'),
             'name2': items2[i].find_all('span', {"class": "team"})[1].get_text(strip=True),
-            'flag2': items2[i].find_all('img', {"class": "flag"})[1].get('src'),
-            'count_or_time': str(int(items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[:2:]) + 1) +
-                             items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[2::]
+            'flag2': 'https://www.hltv.org' + items2[i].find_all('img', {"class": "flag"})[1].get('src'),
+            'count_or_time': str(time) + items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[2::]
                             if not items2[i].find('div', {"class": "middleExtra"}) is None else 1,
+            'live': 'Live' if items2[i].find('div', {"class": "middleExtra"}) is None else 'Not Live',
         })
     return matches
 
@@ -130,9 +136,10 @@ def save_file_news(items, path):
 def save_file_matches(items, path):
     with open(path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter=';')
-        writer.writerow(['Name1', 'Flag1', 'Name2', 'Flag2', 'Count-Time'])
+        writer.writerow(['Name1', 'Flag1', 'Name2', 'Flag2', 'Count-Time', 'Live'])
         for item in items:
-            writer.writerow([item['name1'], item['flag1'], item['name2'], item['flag2'], item['count_or_time']])
+            writer.writerow([item['name1'], item['flag1'], item['name2'], item['flag2'],
+                             item['count_or_time'], item['live']])
 
 
 def parse():
