@@ -96,10 +96,10 @@ def get_content_matches(html):
             'flag1': items2[i].find_all('img', {"class": "flag"})[0].get('src'),
             'name2': items2[i].find_all('span', {"class": "team"})[1].get_text(strip=True),
             'flag2': items2[i].find_all('img', {"class": "flag"})[1].get('src'),
-            'count_or_time': items2[i].find_all('div', {"class": "livescore twoRowExtraRow"}).get_text(strip=True) if
-            items2[i].text.count('livescore twoRowExtraRow') >= 2 else 0
+            'count_or_time': str(int(items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[:2:]) + 1) +
+                             items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[2::]
+                            if not items2[i].find('div', {"class": "middleExtra"}) is None else 1,
         })
-
     return matches
 
 
