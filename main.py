@@ -3,11 +3,10 @@ from bs4 import BeautifulSoup
 import csv
 import os
 import datetime
+from tkinter import *
+
 
 now = datetime.datetime.now()
-
-get_answer = input('Choose what do you want to know? ')
-
 
 URL_MAIN = 'https://www.hltv.org'
 URL_EVENTS = 'https://www.hltv.org/events'
@@ -52,14 +51,14 @@ def get_content_rating(html):
     return teams
 
 
-def get_content_events(html, kind):
+def get_content_events(html):
     soup = BeautifulSoup(html, 'html.parser')
-    if kind == 'TODAY':
-        main = soup.find('div', {"id": "TODAY"})
-    elif kind == 'FEATURED':
-        main = soup.find('div', {"id": "FEATURED"})
-    else:
-        main = soup.find('div', {"id": "ALL"})
+    # if kind == 'TODAY':
+    #     main = soup.find('div', {"id": "TODAY"})
+    # elif kind == 'FEATURED':
+    #     main = soup.find('div', {"id": "FEATURED"})
+    # else:
+    main = soup.find('div', {"id": "ALL"})
     items = main.find_all('a', class_='a-reset ongoing-event')
     events = []
     for item in items:
@@ -149,50 +148,90 @@ def save_file_matches(items, path):
                              item['count_or_time'], item['live']])
 
 
-def parse():
-    if get_answer == 'Rating':
-        html_0 = get_html(URL_MAIN)
-        if html_0.status_code == 200:
-            url_rating = get_data_rating(html_0.text)
-            html = get_html(url_rating)
-            if html.status_code == 200:
-                teams = get_content_rating(html.text)
-                save_file_rating(teams, FILE)
-                os.startfile(FILE)
-            else:
-                print('Error')
-        else:
-            print('Error')
-    elif get_answer == 'Events':
-        get_answer_2 = input('Enter what type of events do you want to see: ')
-        html = get_html(URL_EVENTS)
+root = Tk()
+root.title("LGBT++")
+root.minsize(width=750, height=400)
+
+def button_1_job(event):
+    html_0 = get_html(URL_MAIN)
+    if html_0.status_code == 200:
+        url_rating = get_data_rating(html_0.text)
+        html = get_html(url_rating)
         if html.status_code == 200:
-            events = get_content_events(html.text, get_answer_2)
-            save_file_events(events, FILE)
-            os.startfile(FILE)
-        else:
-            print('Error')
-    elif get_answer == 'Matches':
-        html = get_html(URL_MAIN)
-        if html.status_code == 200:
-            matches = get_content_matches(html.text)
-            save_file_matches(matches, FILE)
-            os.startfile(FILE)
-        else:
-            print('Error')
-    elif get_answer == 'News':
-        year = input('Enter year of news: ')
-        month = input('Enter month of news: ')
-        url_news = 'https://www.hltv.org/news/archive/' + year + '/' + month
-        html = get_html(url_news)
-        if html.status_code == 200:
-            news = get_content_news(html.text)
-            save_file_news(news, FILE)
+            teams = get_content_rating(html.text)
+            save_file_rating(teams, FILE)
             os.startfile(FILE)
         else:
             print('Error')
     else:
-        print("Sorry, but this program doesn't know how to complete your request :(")
+        print('Error')
 
 
-parse()
+def button_2_job(event):
+    html = get_html(URL_EVENTS)
+    if html.status_code == 200:
+        events = get_content_events(html.text)
+        save_file_events(events, FILE)
+        os.startfile(FILE)
+    else:
+        print('Error')
+
+
+def button_3_job(event):
+    html = get_html(URL_MAIN)
+    if html.status_code == 200:
+        matches = get_content_matches(html.text)
+        save_file_matches(matches, FILE)
+        os.startfile(FILE)
+    else:
+        print('Error')
+
+
+def button_4_job(event):
+    main()
+    year = input('Enter year of news: ')
+    month = input('Enter month of news: ')
+    url_news = 'https://www.hltv.org/news/archive/' + year + '/' + month
+    html = get_html(url_news)
+    if html.status_code == 200:
+        news = get_content_news(html.text)
+        save_file_news(news, FILE)
+        os.startfile(FILE)
+    else:
+        print('Error')
+
+def main():
+    but1 = Button(root,
+                  text="Rating",
+                  width=30,height=10,
+                  bg="lightblue",fg="blue")
+    but1.bind("<Button-1>", button_1_job)
+    but1.place(rely=0.1, relx=0.1)
+
+
+    but2 = Button(root,
+                  text="Events",
+                  width=30,height=10,
+                  bg="lightpink",fg="purple")
+    but2.bind("<Button-1>", button_2_job)
+    but2.place(rely=0.1, relx=0.6)
+
+
+    but3 = Button(root,
+                  text="Matches",
+                  width=30,height=10,
+                  bg="lightgreen",fg="darkgreen")
+    but3.bind("<Button-1>", button_3_job)
+    but3.place(rely=0.55, relx=0.6)
+
+
+    but4 = Button(root,
+                  text="News",
+                  width=30,height=10,
+                  bg="yellow",fg="darkorange")
+    but4.bind("<Button-1>", button_4_job)
+    but4.place(rely=0.55, relx=0.1)
+
+main()
+root.mainloop()
+
