@@ -92,18 +92,25 @@ def get_content_matches(html):
 
     for i in range(len(items2)):
         time = 0
+        counts = 0
         if not items2[i].find('div', {"class": "middleExtra"}) is None:
             time = int(items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[:2:]) + 1
         if time == 24:
             time = 0
-        print(items2[i].find('div', {"class": "twoRowExtra"}).get_text(strip=True))
+
+        # if not items2[i].find('div', {"class": "twoRowExtra"}) is None:
+        #     items_count = items2[i].find_all('div', {"class": "livescore twoRowExtraRow"})
+        #     print(items_count)
+        #     counts = items_count[0].get_text() + items_count[1].get_text()
+
         matches.append({
             'name1': items2[i].find_all('span', {"class": "team"})[0].get_text(strip=True),
             'flag1': 'https://www.hltv.org' + items2[i].find_all('img', {"class": "flag"})[0].get('src'),
             'name2': items2[i].find_all('span', {"class": "team"})[1].get_text(strip=True),
             'flag2': 'https://www.hltv.org' + items2[i].find_all('img', {"class": "flag"})[1].get('src'),
             'count_or_time': str(time) + items2[i].find('div', {"class": "middleExtra"}).get_text(strip=True)[2::]
-                            if not items2[i].find('div', {"class": "middleExtra"}) is None else 1,
+                            if not items2[i].find('div', {"class": "middleExtra"}) is None else '-------------------',
+                            # counts if not items2[i].find('div', {"class": "twoRowExtra"}) is None else 0,
             'live': 'Live' if items2[i].find('div', {"class": "middleExtra"}) is None else 'Not Live',
         })
     return matches
@@ -136,7 +143,7 @@ def save_file_news(items, path):
 def save_file_matches(items, path):
     with open(path, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file, delimiter=';')
-        writer.writerow(['Name1', 'Flag1', 'Name2', 'Flag2', 'Count-Time', 'Live'])
+        writer.writerow(['Name1', 'Flag1', 'Name2', 'Flag2', 'Time', 'Live'])
         for item in items:
             writer.writerow([item['name1'], item['flag1'], item['name2'], item['flag2'],
                              item['count_or_time'], item['live']])
