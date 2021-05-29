@@ -188,7 +188,6 @@ def button_3_job(event):
 
 
 def button_4_job(event):
-    main()
     year = input('Enter year of news: ')
     month = input('Enter month of news: ')
     url_news = 'https://www.hltv.org/news/archive/' + year + '/' + month
@@ -199,6 +198,11 @@ def button_4_job(event):
         os.startfile(FILE)
     else:
         print('Error')
+
+
+def button_5_job(event):
+    exit()
+
 
 def main():
     but1 = Button(root,
@@ -231,6 +235,14 @@ def main():
                   bg="yellow",fg="darkorange")
     but4.bind("<Button-1>", button_4_job)
     but4.place(rely=0.55, relx=0.1)
+
+
+    but5 = Button(root,
+                  text="Exit",
+                  width=10, height=5,
+                  bg="black", fg="white")
+    but5.bind("<Button-1>", button_5_job)
+    but5.place(rely=0.4, relx=0.45)
 
 main()
 root.mainloop()
